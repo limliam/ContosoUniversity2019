@@ -12,6 +12,8 @@ namespace ContosoUniversity.Controllers
 {
     public class StudentsController : Controller
     {
+        // ASP.NET Core dependency injection takes care of passing an instance of SchoolContext
+        // into the controller. You configured that in the Startup class.
         private readonly SchoolContext _context;
 
         public StudentsController(SchoolContext context)
@@ -19,6 +21,8 @@ namespace ContosoUniversity.Controllers
             _context = context;
         }
 
+        //The controller contains an Index action method, which displays all students in the database.
+        //The method gets a list of students from the Students entity set by reading the Students property of the database context instance:
         // GET: Students
         //public async Task<IActionResult> Index()
         //{
@@ -84,11 +88,18 @@ namespace ContosoUniversity.Controllers
             //var student = await _context.Students
             //    .FirstOrDefaultAsync(m => m.ID == id);
 
-            var student = await _context.Students
+            //In Controllers/ StudentsController.cs, the action method for the Details view
+            //uses the FirstOrDefaultAsync method to retrieve a single Student entity.
+            //Add code that calls Include.ThenInclude, and AsNoTracking methods.             
+             var student = await _context.Students
                     .Include(s => s.Enrollments)
                     .ThenInclude(e => e.Course)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(m => m.ID == id);
+            // The Include and ThenInclude methods cause the context to load the Student.Enrollments navigation property,
+            // and within each enrollment the Enrollment.Course navigation property.
+            // The AsNoTracking method improves performance in scenarios where the entities returned won't be updated
+            // in the current context's lifetime.
 
             if (student == null)
             {
@@ -119,6 +130,14 @@ namespace ContosoUniversity.Controllers
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
+                //This code adds the Student entity created by the ASP.NET Core MVC model binder to the Students entity set
+                //and then saves the changes to the database.
+                //(Model binder refers to the ASP.NET Core MVC functionality that makes it easier for you to work with data submitted by a form;
+                //a model binder converts posted form values to CLR types and passes them to the action method in parameters.
+                //In this case, the model binder instantiates a Student entity for you using property values from the Form collection.)
+
+                //You removed ID from the Bind attribute because ID is the primary key value which SQL Server will set automatically when the row is inserted.
+                //Input from the user doesn't set the ID value.
             }
             catch (DbUpdateException /* ex */)
             {
@@ -294,4 +313,36 @@ namespace ContosoUniversity.Controllers
             return _context.Students.Any(e => e.ID == id);
         }
     }
-}
+}/*
+  
+** Asynchronous code **
+Asynchronous programming is the default mode for ASP.NET Core and EF Core.
+
+A web server has a limited number of threads available, and in high load situations all of the available threads might be in use. 
+When that happens, the server can't process new requests until the threads are freed up. 
+With synchronous code, many threads may be tied up while they aren't actually doing any work because they're waiting for I/O to complete. 
+With asynchronous code, when a process is waiting for I/O to complete, its thread is freed up for the server to use for processing other requests. 
+As a result, asynchronous code enables server resources to be used more efficiently, and the server is enabled to handle more traffic without delays.
+
+Asynchronous code does introduce a small amount of overhead at run time, but for low traffic situations the performance hit is negligible, 
+while for high traffic situations, the potential performance improvement is substantial.
+
+In the following code, async, Task<T>, await, and ToListAsync make the code execute asynchronously.
+
+- The async keyword tells the compiler to generate callbacks for parts of the method body and to automatically create the Task<IActionResult> object that's returned.
+- The return type Task<IActionResult> represents ongoing work with a result of type IActionResult.
+- The await keyword causes the compiler to split the method into two parts. The first part ends with the operation that's started asynchronously. 
+The second part is put into a callback method that's called when the operation completes.
+- ToListAsync is the asynchronous version of the ToList extension method.
+
+Some things to be aware of when writing asynchronous code that uses EF:
+
+- Only statements that cause queries or commands to be sent to the database are executed asynchronously. 
+That includes, for example, ToListAsync, SingleOrDefaultAsync, and SaveChangesAsync. 
+It doesn't include, for example, statements that just change an IQueryable, such as var students = context.Students.Where(s => s.LastName == "Davolio").
+- An EF context isn't thread safe: don't try to do multiple operations in parallel. 
+When you call any async EF method, always use the await keyword.
+- To take advantage of the performance benefits of async code, make sure that any library packages used also use 
+async if they call any EF methods that cause queries to be sent to the database.
+
+  */

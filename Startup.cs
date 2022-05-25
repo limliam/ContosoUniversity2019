@@ -23,6 +23,7 @@ namespace ContosoUniversity
             services.AddDbContext<SchoolContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
+            // The AddDatabaseDeveloperPageExceptionFilter provides helpful error information in the development environment.
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddControllersWithViews();

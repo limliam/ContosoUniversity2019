@@ -13,19 +13,16 @@ namespace ContosoUniversity
         {
             //CreateHostBuilder(args).Build().Run
             var host = CreateHostBuilder(args).Build();
-            CreateDbIfNotExists(host);
-            host.Run();
-        }
-
-        private static void CreateDbIfNotExists(IHost host)
-        {
+            //CreateDbIfNotExists(host);
             using (var scope = host.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 try
                 {
+                    // Get a database context instance from the dependency injection container.
                     var context = services.GetRequiredService<SchoolContext>();
-                    DbInitializer.Initialize(context);
+                    // Seed data if not exist
+                    DbInitializer.Initialize(context); 
                 }
                 catch (Exception ex)
                 {
@@ -33,8 +30,32 @@ namespace ContosoUniversity
                     logger.LogError(ex, "An error occurred creating the DB");
                 }
             }
-            //throw new NotImplementedException();
+            host.Run();
         }
+
+        //The first time the app is run, the database is created and loaded with test data.
+        //Whenever the data model changes:
+        //Delete the database.
+        //Update the seed method, and start afresh with a new database.
+
+        //private static void CreateDbIfNotExists(IHost host)
+        //{
+        //    using (var scope = host.Services.CreateScope())
+        //    {
+        //        var services = scope.ServiceProvider;
+        //        try
+        //        {
+        //            var context = services.GetRequiredService<SchoolContext>();
+        //            DbInitializer.Initialize(context);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            var logger = services.GetRequiredService<ILogger<Program>>();
+        //            logger.LogError(ex, "An error occurred creating the DB");
+        //        }
+        //    }
+        //    //throw new NotImplementedException();
+        //}
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)

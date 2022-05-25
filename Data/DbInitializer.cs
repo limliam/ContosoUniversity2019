@@ -10,7 +10,10 @@ namespace ContosoUniversity.Data
     {
         public static void Initialize(SchoolContext context)
         {
-            //context.Database.EnsureCreated();
+            // EF creates an empty database.In this section, a method is added that's called
+            // after the database is created in order to populate it with test data.
+            //The EnsureCreated method is used to automatically create the database. 
+            context.Database.EnsureCreated();
 
             // Look for any students.
             if (context.Students.Any())
@@ -219,7 +222,7 @@ namespace ContosoUniversity.Data
                     CourseID = courses.Single(c => c.Title == "Microeconomics").CourseID,
                     Grade = Grade.B
                     },
-                new Enrollment {
+                    new Enrollment {
                     StudentID = students.Single(s => s.LastName == "Barzdukas").ID,
                     CourseID = courses.Single(c => c.Title == "Chemistry").CourseID,
                     Grade = Grade.B
