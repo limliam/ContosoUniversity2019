@@ -38,6 +38,16 @@ namespace ContosoUniversity.Controllers
             ViewData["CurrentSort"] = sortOrder;
             ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
+            //This code receives a sortOrder parameter from the query string in the URL.
+            //The query string value is provided by ASP.NET Core MVC as a parameter to the action method.
+            //The parameter will be a string that's either "Name" or "Date", optionally followed by an underscore and the string "desc"
+            //to specify descending order. The default sort order is ascending.
+            //The first time the Index page is requested, there's no query string.
+            //The students are displayed in ascending order by last name, which is the default as established by
+            //the fall-through case in the switch statement. When the user clicks a column heading hyperlink,
+            //the appropriate sortOrder value is provided in the query string.
+            //The two ViewData elements(NameSortParm and DateSortParm) are used by the view to configure
+            //the column heading hyperlinks with the appropriate query string values.
 
             if (searchString != null)
             {
@@ -72,9 +82,16 @@ namespace ContosoUniversity.Controllers
                     students = students.OrderBy(s => s.LastName);
                     break;
             }
+            //The method uses LINQ to Entities to specify the column to sort by.
+            //The code creates an IQueryable variable before the switch statement, modifies it in the switch statement,
+            //and calls the ToListAsync method after the switch statement.
+            //When you create and modify IQueryable variables, no query is sent to the database.
+            //The query isn't executed until you convert the IQueryable object into a collection by calling a method such as ToListAsync.
+            //Therefore, this code results in a single query that's not executed until the return View statement.
 
             int pageSize = 3;
             return View(await PaginatedList<Student>.CreateAsync(students.AsNoTracking(), pageNumber ?? 1, pageSize));
+            //  return the value of pageNumber if it has a value, or return 1 if pageNumber is null.
         }
 
         // GET: Students/Details/5

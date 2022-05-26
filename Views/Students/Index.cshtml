@@ -19,7 +19,12 @@
         </p>
     </div>
 </form>
-
+<!--
+    This code uses the <form> tag helper to add the search text box and button. 
+    By default, the <form> tag helper submits form data with a POST, which means that parameters are passed in the HTTP message body 
+    and not in the URL as query strings. When you specify HTTP GET, the form data is passed in the URL as query strings, which enables 
+    users to bookmark the URL. The W3C guidelines recommend that you should use GET when the action doesn't result in an update.
+-->
 <table class="table">
     <thead>
         <tr>
